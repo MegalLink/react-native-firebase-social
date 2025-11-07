@@ -1,50 +1,95 @@
-# Welcome to your Expo app 👋
+# React Native Firebase Social App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación de red social construida con React Native, Expo Router y React Native Paper.
 
-## Get started
+## 🎨 Características
 
-1. Install dependencies
+- ✅ Pantalla de Login con diseño gradiente
+- ✅ Pantalla de Registro con validación
+- ✅ Tema personalizado usando React Native Paper
+- ✅ Navegación con Expo Router
+- ✅ Soporte para modo claro/oscuro
+- ✅ Diseño responsive y moderno
 
-   ```bash
-   npm install
-   ```
+## 📱 Pantallas
 
-2. Start the app
+### Login
+- Email y contraseña
+- Opción de mostrar/ocultar contraseña
+- Enlace de recuperación de contraseña
+- Navegación a registro
 
-   ```bash
-   npx expo start
-   ```
+### Registro
+- Nombre completo
+- Email
+- Contraseña
+- Confirmación de contraseña
+- Navegación a login
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## 🚀 Instalación
 
 ```bash
-npm run reset-project
+# Instalar dependencias
+npm install
+
+# Iniciar la aplicación
+npm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 📦 Dependencias principales
 
-## Learn more
+- **expo**: Framework para React Native
+- **expo-router**: Navegación basada en archivos
+- **react-native-paper**: Librería de UI con Material Design
+- **expo-linear-gradient**: Gradientes para fondos
 
-To learn more about developing your project with Expo, look at the following resources:
+## 🎨 Tema
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+El tema está configurado en `/constants/theme.ts` con colores personalizados:
 
-## Join the community
+### Modo Claro
+- Primary: #6366F1 (Índigo)
+- Secondary: #EC4899 (Rosa)
+- Tertiary: #8B5CF6 (Púrpura)
 
-Join our community of developers creating universal apps.
+### Modo Oscuro
+- Primary: #818CF8 (Índigo claro)
+- Secondary: #F472B6 (Rosa claro)
+- Tertiary: #A78BFA (Púrpura claro)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 📁 Estructura del Proyecto
+
+```
+app/
+  ├── (auth)/
+  │   ├── _layout.tsx      # Layout de autenticación
+  │   ├── login.tsx        # Pantalla de login
+  │   └── register.tsx     # Pantalla de registro
+  ├── _layout.tsx          # Layout principal con PaperProvider
+  └── index.tsx            # Redirección a login
+constants/
+  └── theme.ts             # Configuración del tema
+```
+
+## 🔜 Próximos pasos
+
+- [ ] Integrar Firebase Authentication
+- [ ] Implementar validación de formularios
+- [ ] Agregar pantalla de recuperación de contraseña
+- [ ] Implementar persistencia de sesión
+- [ ] Agregar pantallas de la red social (feed, perfil, etc.)
+
+## 👨‍💻 Desarrollo
+
+Para ejecutar en diferentes plataformas:
+
+```bash
+# iOS
+npm run ios
+
+# Android
+npm run android
+
+# Web
+npm run web
+```
