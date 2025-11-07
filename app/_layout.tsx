@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 import 'react-native-reanimated';
 
+import { Providers } from '@/components/providers';
 import { darkTheme, lightTheme } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -16,17 +17,19 @@ export default function RootLayout() {
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
 
   return (
-    <PaperProvider theme={theme}>
-      <Stack 
-        screenOptions={{ 
-          headerShown: false,
-          animation: Platform.OS === 'ios' ? 'default' : 'fade',
-          animationDuration: 300,
-        }}
-      >
-        <Stack.Screen name="(auth)" />
-      </Stack>
-      <StatusBar style="auto" />
-    </PaperProvider>
+    <Providers>
+      <PaperProvider theme={theme}>
+        <Stack 
+          screenOptions={{ 
+            headerShown: false,
+            animation: Platform.OS === 'ios' ? 'default' : 'fade',
+            animationDuration: 300,
+          }}
+        >
+          <Stack.Screen name="(auth)" />
+        </Stack>
+        <StatusBar style="auto" />
+      </PaperProvider>
+    </Providers>
   );
 }

@@ -1,10 +1,12 @@
 import { AnimatedScreen } from '@/components/animated-screen';
 import { AuthAvatar } from '@/components/auth-avatar';
+import { useSignIn } from '@/hooks/use-auth';
+import { useAuthStore } from '@/store/auth-store';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Button, Text, TextInput, useTheme } from 'react-native-paper';
+import { Button, Snackbar, Text, TextInput, useTheme } from 'react-native-paper';
 
 export default function LoginScreen() {
   const theme = useTheme();
@@ -12,10 +14,27 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  
+  const signInMutation = useSignIn();
+  const { error, clearError } = useAuthStore();
 
   const handleLogin = () => {
-    // TODO: Implementar lógica de login
-    console.log('Login:', { email, password });
+    if (!email || !password) {
+      return;
+    }
+    
+    signInMutation.mutate(
+      { email: email.trim(), password },
+      {
+        onSuccess: () => {
+          setShowSuccess(true);
+          setTimeout(() => {
+            setShowSuccess(false);
+          }, 2000);
+        },
+      }
+    );
   };
 
   return (
@@ -37,7 +56,7 @@ export default function LoginScreen() {
 
           {/* Title */}
           <Text variant="displaySmall" style={styles.title}>
-            Bienvenido
+            Bienvenido Ionic Social
           </Text>
           <Text variant="bodyLarge" style={styles.subtitle}>
             Inicia sesión para continuar
@@ -46,44 +65,29 @@ export default function LoginScreen() {
           {/* Form */}
           <View style={styles.formContainer}>
             <TextInput
-              mode="outlined"
               label="Email"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
-              left={<TextInput.Icon icon="email-outline" />}
+              right={<TextInput.Icon icon="email-outline" />}
+              textColor="#1F2937"
               style={styles.input}
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: '#B8B8D2',
-                  outline: 'transparent',
-                }
-              }}
             />
 
             <TextInput
-              mode="outlined"
               label="Contraseña"
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
-              left={<TextInput.Icon icon="lock-outline" />}
               right={
                 <TextInput.Icon
                   icon={showPassword ? 'eye-off' : 'eye'}
                   onPress={() => setShowPassword(!showPassword)}
                 />
               }
+              textColor="#1F2937"
               style={styles.input}
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: '#B8B8D2',
-                  outline: 'transparent',
-                }
-              }}
             />
 
             <Text style={styles.forgotPassword}>
@@ -95,8 +99,10 @@ export default function LoginScreen() {
               onPress={handleLogin}
               style={styles.loginButton}
               labelStyle={styles.loginButtonLabel}
+              loading={signInMutation.isPending}
+              disabled={signInMutation.isPending || !email || !password}
             >
-              Iniciar Sesión
+              {signInMutation.isPending ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </Button>
 
             <View style={styles.registerContainer}>
@@ -109,6 +115,26 @@ export default function LoginScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
     </LinearGradient>
+    <Snackbar
+      visible={!!error}
+      onDismiss={clearError}
+      duration={4000}
+      action={{
+        label: 'Cerrar',
+        onPress: clearError,
+      }}
+      style={{ backgroundColor: '#EF4444' }}
+    >
+      {error}
+    </Snackbar>
+    <Snackbar
+      visible={showSuccess}
+      onDismiss={() => setShowSuccess(false)}
+      duration={2000}
+      style={{ backgroundColor: '#10B981' }}
+    >
+      ¡Inicio de sesión exitoso! 🎉
+    </Snackbar>
     </AnimatedScreen>
   );
 }
@@ -142,6 +168,7 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    fontSize: 16,
   },
   inputOutline: {
     borderRadius: 12,

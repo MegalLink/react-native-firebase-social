@@ -1,10 +1,12 @@
 import { AnimatedScreen } from '@/components/animated-screen';
 import { AuthAvatar } from '@/components/auth-avatar';
+import { useSignUp } from '@/hooks/use-auth';
+import { useAuthStore } from '@/store/auth-store';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Button, Text, TextInput, useTheme } from 'react-native-paper';
+import { Button, Snackbar, Text, TextInput, useTheme } from 'react-native-paper';
 
 export default function RegisterScreen() {
   const theme = useTheme();
@@ -15,10 +17,46 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [validationError, setValidationError] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const signUpMutation = useSignUp();
+  const { error, clearError } = useAuthStore();
 
   const handleRegister = () => {
-    // TODO: Implementar lógica de registro
-    console.log('Register:', { fullName, email, password, confirmPassword });
+    setValidationError('');
+    
+    // Validaciones
+    if (!fullName || !email || !password || !confirmPassword) {
+      setValidationError('Por favor, completa todos los campos');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setValidationError('Las contraseñas no coinciden');
+      return;
+    }
+
+    if (password.length < 6) {
+      setValidationError('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    signUpMutation.mutate(
+      {
+        email: email.trim(),
+        password,
+        displayName: fullName.trim(),
+      },
+      {
+        onSuccess: () => {
+          setShowSuccess(true);
+          setTimeout(() => {
+            setShowSuccess(false);
+          }, 2000);
+        },
+      }
+    );
   };
 
   return (
@@ -49,46 +87,30 @@ export default function RegisterScreen() {
           {/* Form */}
           <View style={styles.formContainer}>
             <TextInput
-              mode="outlined"
               label="Nombre completo"
               value={fullName}
               onChangeText={setFullName}
-              left={<TextInput.Icon icon="account-outline" />}
+              right={<TextInput.Icon icon="account-outline" />}
+              textColor="#1F2937"
               style={styles.input}
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: '#B8B8D2',
-                  outline: 'transparent',
-                }
-              }}
             />
 
             <TextInput
-              mode="outlined"
               label="Email"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
-              left={<TextInput.Icon icon="email-outline" />}
+              right={<TextInput.Icon icon="email-outline" />}
+              textColor="#1F2937"
               style={styles.input}
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: '#B8B8D2',
-                  outline: 'transparent',
-                }
-              }}
             />
 
             <TextInput
-              mode="outlined"
               label="Contraseña"
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
-              left={<TextInput.Icon icon="lock-outline" />}
               right={
                 <TextInput.Icon
                   icon={showPassword ? 'eye-off' : 'eye'}
@@ -96,22 +118,14 @@ export default function RegisterScreen() {
                 />
               }
               style={styles.input}
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: '#B8B8D2',
-                  outline: 'transparent',
-                }
-              }}
+              textColor="#1F2937"
             />
 
             <TextInput
-              mode="outlined"
               label="Confirmar Contraseña"
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry={!showConfirmPassword}
-              left={<TextInput.Icon icon="lock-outline" />}
               right={
                 <TextInput.Icon
                   icon={showConfirmPassword ? 'eye-off' : 'eye'}
@@ -119,26 +133,18 @@ export default function RegisterScreen() {
                 />
               }
               style={styles.input}
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: '#B8B8D2',
-                  outline: 'transparent',
-                }
-              }}
+              textColor="#1F2937"
             />
-
-            <Text style={styles.termsText}>
-              o regístrate con
-            </Text>
 
             <Button
               mode="contained"
               onPress={handleRegister}
               style={styles.registerButton}
               labelStyle={styles.registerButtonLabel}
+              loading={signUpMutation.isPending}
+              disabled={signUpMutation.isPending || !fullName || !email || !password || !confirmPassword}
             >
-              Crear Cuenta
+              {signUpMutation.isPending ? 'Creando cuenta...' : 'Crear Cuenta'}
             </Button>
 
             <View style={styles.loginContainer}>
@@ -151,6 +157,32 @@ export default function RegisterScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
     </LinearGradient>
+    <Snackbar
+      visible={!!error || !!validationError}
+      onDismiss={() => {
+        clearError();
+        setValidationError('');
+      }}
+      duration={4000}
+      action={{
+        label: 'Cerrar',
+        onPress: () => {
+          clearError();
+          setValidationError('');
+        },
+      }}
+      style={{ backgroundColor: '#EF4444' }}
+    >
+      {error || validationError}
+    </Snackbar>
+    <Snackbar
+      visible={showSuccess}
+      onDismiss={() => setShowSuccess(false)}
+      duration={2000}
+      style={{ backgroundColor: '#10B981' }}
+    >
+      ¡Registro exitoso! Bienvenido 🎉
+    </Snackbar>
     </AnimatedScreen>
   );
 }
@@ -184,6 +216,7 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    fontSize: 16,
   },
   inputOutline: {
     borderRadius: 12,

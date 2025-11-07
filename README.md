@@ -32,6 +32,13 @@ Aplicación de red social construida con React Native, Expo Router y React Nativ
 # Instalar dependencias
 npm install
 
+# Configurar Firebase (IMPORTANTE)
+# 1. Copia el archivo .env.example a .env
+cp .env.example .env
+
+# 2. Edita .env y agrega tus credenciales de Firebase
+# Ver FIREBASE_SETUP.md para instrucciones detalladas
+
 # Iniciar la aplicación
 npm start
 ```
@@ -42,6 +49,11 @@ npm start
 - **expo-router**: Navegación basada en archivos
 - **react-native-paper**: Librería de UI con Material Design
 - **expo-linear-gradient**: Gradientes para fondos
+- **firebase**: Autenticación y backend
+- **zustand**: State management global
+- **@tanstack/react-query**: Manejo de datos asíncronos y cache
+- **react-native-reanimated**: Animaciones de alto rendimiento
+- **react-native-vector-icons**: Iconos vectoriales
 
 ## 🎨 Tema
 
@@ -67,17 +79,42 @@ app/
   │   └── register.tsx     # Pantalla de registro
   ├── _layout.tsx          # Layout principal con PaperProvider
   └── index.tsx            # Redirección a login
+components/
+  ├── auth-avatar.tsx      # Componente de avatar reutilizable
+  ├── animated-screen.tsx  # Wrapper con animaciones
+  └── providers.tsx        # React Query Provider + Auth Listener
+config/
+  └── firebase.ts          # Configuración de Firebase
 constants/
   └── theme.ts             # Configuración del tema
+hooks/
+  ├── use-auth.ts          # Hooks de autenticación (React Query)
+  └── use-color-scheme.ts  # Hook para tema claro/oscuro
+services/
+  └── auth-service.ts      # Lógica de negocio de autenticación
+store/
+  └── auth-store.ts        # Estado global (Zustand)
 ```
 
 ## 🔜 Próximos pasos
 
-- [ ] Integrar Firebase Authentication
-- [ ] Implementar validación de formularios
+- [x] Integrar Firebase Authentication
+- [x] Implementar state management con Zustand
+- [x] Implementar React Query para manejo de datos
+- [x] Implementar validación de formularios
 - [ ] Agregar pantalla de recuperación de contraseña
 - [ ] Implementar persistencia de sesión
 - [ ] Agregar pantallas de la red social (feed, perfil, etc.)
+
+## 🔐 Autenticación
+
+El proyecto usa:
+- **Firebase Authentication**: Para manejo seguro de usuarios
+- **Zustand**: State management simple y reactivo
+- **React Query**: Cache inteligente y manejo de estados async
+- **Variables de entorno**: Credenciales seguras (no se suben a Git)
+
+Ver [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) para instrucciones detalladas.
 
 ## 👨‍💻 Desarrollo
 
