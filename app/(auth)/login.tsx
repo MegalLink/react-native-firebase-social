@@ -2,40 +2,40 @@ import { AnimatedScreen } from '@/components/animated-screen';
 import { AuthAvatar } from '@/components/auth-avatar';
 import { useSignIn } from '@/hooks/use-auth';
 import { useAuthStore } from '@/store/auth-store';
+import { useForm } from '@tanstack/react-form';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Button, Snackbar, Text, TextInput, useTheme } from 'react-native-paper';
+import { Button, Snackbar, Text, TextInput } from 'react-native-paper';
 
 export default function LoginScreen() {
-  const theme = useTheme();
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   
   const signInMutation = useSignIn();
   const { error, clearError } = useAuthStore();
 
-  const handleLogin = () => {
-    if (!email || !password) {
-      return;
-    }
-    
-    signInMutation.mutate(
-      { email: email.trim(), password },
-      {
-        onSuccess: () => {
-          setShowSuccess(true);
-          setTimeout(() => {
-            setShowSuccess(false);
-          }, 2000);
-        },
-      }
-    );
-  };
+  const form = useForm({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+    onSubmit: async ({ value }) => {
+      signInMutation.mutate(
+        { email: value.email.trim(), password: value.password },
+        {
+          onSuccess: () => {
+            setShowSuccess(true);
+            setTimeout(() => {
+              setShowSuccess(false);
+            }, 2000);
+          },
+        }
+      );
+    },
+  });
 
   return (
     <AnimatedScreen>
@@ -64,46 +64,96 @@ export default function LoginScreen() {
 
           {/* Form */}
           <View style={styles.formContainer}>
-            <TextInput
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              right={<TextInput.Icon icon="email-outline" />}
-              textColor="#1F2937"
-              style={styles.input}
-            />
+            <form.Field
+              name="email"
+              validators={{
+                onChange: ({ value }) => {
+                  if (!value) return 'El email es requerido';
+                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    return 'Email inválido';
+                  }
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <View>
+                  <TextInput
+                    label="Email"
+                    value={field.state.value}
+                    onChangeText={field.handleChange}
+                    onBlur={field.handleBlur}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    right={<TextInput.Icon icon="email-outline" />}
+                    textColor="#1F2937"
+                    style={styles.input}
+                    error={!!field.state.meta.errors.length}
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <Text style={styles.errorText}>{field.state.meta.errors[0]}</Text>
+                  )}
+                </View>
+              )}
+            </form.Field>
 
-            <TextInput
-              label="Contraseña"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              right={
-                <TextInput.Icon
-                  icon={showPassword ? 'eye-off' : 'eye'}
-                  onPress={() => setShowPassword(!showPassword)}
-                />
-              }
-              textColor="#1F2937"
-              style={styles.input}
-            />
+            <form.Field
+              name="password"
+              validators={{
+                onChange: ({ value }) => {
+                  if (!value) return 'La contraseña es requerida';
+                  if (value.length < 6) {
+                    return 'La contraseña debe tener al menos 6 caracteres';
+                  }
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <View>
+                  <TextInput
+                    label="Contraseña"
+                    value={field.state.value}
+                    onChangeText={field.handleChange}
+                    onBlur={field.handleBlur}
+                    secureTextEntry={!showPassword}
+                    right={
+                      <TextInput.Icon
+                        icon={showPassword ? 'eye-off' : 'eye'}
+                        onPress={() => setShowPassword(!showPassword)}
+                      />
+                    }
+                    textColor="#1F2937"
+                    style={styles.input}
+                    error={!!field.state.meta.errors.length}
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <Text style={styles.errorText}>{field.state.meta.errors[0]}</Text>
+                  )}
+                </View>
+              )}
+            </form.Field>
 
             <Text style={styles.forgotPassword}>
               ¿Olvidaste tu contraseña?
             </Text>
 
-            <Button
-              mode="contained"
-              onPress={handleLogin}
-              style={styles.loginButton}
-              labelStyle={styles.loginButtonLabel}
-              loading={signInMutation.isPending}
-              disabled={signInMutation.isPending || !email || !password}
+            <form.Subscribe
+              selector={(state) => [state.canSubmit, state.isSubmitting]}
             >
-              {signInMutation.isPending ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-            </Button>
+              {([canSubmit, isSubmitting]) => (
+                <Button
+                  mode="contained"
+                  onPress={() => form.handleSubmit()}
+                  style={styles.loginButton}
+                  labelStyle={styles.loginButtonLabel}
+                  loading={signInMutation.isPending}
+                  disabled={!canSubmit || signInMutation.isPending}
+                >
+                  {signInMutation.isPending ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                </Button>
+              )}
+            </form.Subscribe>
 
             <View style={styles.registerContainer}>
               <Text style={styles.registerText}>¿No tienes una cuenta? </Text>
@@ -173,6 +223,13 @@ const styles = StyleSheet.create({
   inputOutline: {
     borderRadius: 12,
     borderWidth: 0,
+  },
+  errorText: {
+    color: '#FEE2E2',
+    fontSize: 12,
+    marginTop: -12,
+    marginBottom: 8,
+    marginLeft: 12,
   },
   forgotPassword: {
     color: '#FFFFFF',
